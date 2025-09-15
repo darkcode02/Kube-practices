@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns-dark
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-first-deployment
+  namespace: ns-dark
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector: 
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx #debe coincidir con las labels del deployment
+    spec:
+      containers:
+        - name: nginx-container
+          image: nginx:latest
+          ports:
+          - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: ns-dark
+spec:
+  selector:
+    app: nginx    # Debe coincidir con las labels del Deployment
+  ports:
+  - protocol: TCP
+    port: 80       # Puerto del servicio
+    targetPort: 80 # Puerto del contenedor
+    nodePort: 30080 # Puerto expuesto en localhost
+  type: NodePort
