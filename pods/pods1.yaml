@@ -1,0 +1,11 @@
+#ejemplo crear un pod nginx desde un manifest sencillo
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-test
+  labels:
+    app: app-nginx
+spec:
+  containers:
+    - name: app-nginx
+      image: nginx:latest

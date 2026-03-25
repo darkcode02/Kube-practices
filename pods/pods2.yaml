@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-con-dos-contenedores
+  labels:
+    app: app-nginx-2
+spec:
+  containers:
+    - name: contenedor-1
+      image: nginx:1.25
+      ports:
+        - containerPort: 80
+
+    - name: contenedor-2
+      image: alpine:3.19
+      ports:
+        - containerPort: 81
+      command: ["sh", "-c", "while true; do echo 'sidecar activo'; sleep 10; done"]
