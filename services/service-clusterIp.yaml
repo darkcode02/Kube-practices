@@ -1,34 +1,36 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: service-1-deployment
+  name: service-2-deployment
   labels:
-    app: service-1
+    app: service-2
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: service-1
+      app: service-2
   template:
     metadata:
       labels:
-        app: service-1
+        app: service-2
     spec:
       containers:
-      - name: service-1-container
+      - name: service-2-container
         image: nginx:latest
         ports:
         - containerPort: 80
+      
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: service-1-service
+  name: service-2-service
   labels:
-    app: service-1
+    app: service-2
 spec:
+  type: ClusterIP
   selector:
-    app: service-1
+    app: service-2
   ports:
   - protocol: TCP
     port: 8080
