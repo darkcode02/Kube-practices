@@ -1,11 +1,14 @@
-FROM golang:1.13 AS builder 
-
+FROM golang:1.26-alpine AS builder
 WORKDIR /app
-COPY src/main.go .
-RUN CGO_ENABLED=0 GOOS=linux GOPROXY=https://proxy.golang.org go build -o app ./main.go
 
-FROM alpine:latest 
+COPY go.mod ./
+RUN go mod download
 
-WORKDIR /app 
+COPY . .
+RUN go build -o app ./src
+
+FROM alpine:3.19
+WORKDIR /app
 COPY --from=builder /app/app .
-CMD [ "./app" ]
+EXPOSE 8080
+CMD ["./app"]

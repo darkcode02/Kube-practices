@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Request</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+            display: none;
+        }
+        .response.show {
+            display: block;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background-color: #fff3cd;
+            color: #721c24;
+        }
+        .success {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+            color: #155724;
+        }
+        pre {
+            background-color: #f1f3f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Consumir API</h1>
+        
+        <button id="fetchBtn">Hacer Solicitud GET</button>
+        <button id="fetchPostBtn">Hacer Solicitud POST</button>
+        
+        <div id="response" class="response">
+            <h3>Respuesta:</h3>
+            <pre id="responseContent"></pre>
+        </div>
+    </div>
+
+    <script>
+        // ===== CONFIGURACIÓN DEL BACKEND =====
+        // Service K8s: backend (NodePort:30008)
+        const BACKEND_URL = 'http://192.168.49.2:30008';
+
+        // ===== SOLICITUD GET =====
+        const fetchBtn = document.getElementById('fetchBtn');
+        fetchBtn.addEventListener('click', () => {
+            fetchDataFromBackend('GET');
+        });
+
+        // ===== SOLICITUD POST =====
+        const fetchPostBtn = document.getElementById('fetchPostBtn');
+        fetchPostBtn.addEventListener('click', () => {
+            fetchDataFromBackend('POST');
+        });
+
+        // ===== FUNCIÓN PRINCIPAL =====
+        async function fetchDataFromBackend(method = 'GET') {
+            const responseDiv = document.getElementById('response');
+            const responseContent = document.getElementById('responseContent');
+
+            try {
+                // Mostrar que está cargando
+                responseContent.textContent = 'Cargando...';
+                responseDiv.classList.remove('error', 'success');
+                responseDiv.classList.add('show');
+
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+
+                // Si es POST, agregar body con datos
+                if (method === 'POST') {
+                    options.body = JSON.stringify({
+                        timestamp: new Date().toISOString(),
+                        message: 'Solicitud POST desde frontend'
+                    });
+                }
+
+                // Realizar la solicitud al backend (puerto 80)
+                const response = await fetch(`${BACKEND_URL}/`, options);
+
+                // Verificar si la respuesta es exitosa
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                // Parsear la respuesta como JSON
+                const data = await response.json();
+
+                // Mostrar la respuesta formateada
+                responseContent.innerHTML = `
+                    <strong>Respuesta del Backend:</strong>\n
+                    ⏰ <strong>Hora del servidor:</strong> ${new Date(data.time).toLocaleString()}\n
+                    🖥️ <strong>Hostname:</strong> ${data.hostname}\n\n
+                    <strong>JSON completo:</strong>\n${JSON.stringify(data, null, 2)}
+                `;
+                responseDiv.classList.remove('error');
+                responseDiv.classList.add('success');
+
+            } catch (error) {
+                console.error('Error en la solicitud:', error);
+                responseContent.textContent = `❌ Error: ${error.message}\n\nAsegúrate de que el backend está corriendo en ${BACKEND_URL}`;
+                responseDiv.classList.remove('success');
+                responseDiv.classList.add('error');
+            }
+        }
+    </script>
+</body>
+</html>
