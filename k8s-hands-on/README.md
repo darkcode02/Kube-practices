@@ -39,7 +39,7 @@ k8s-hands-on/
 ├── backend/
 │   ├── Dockerfile              # Multi-stage: builder + runtime
 │   ├── backend.yaml            # K8s Deployment + Service
-│   ├── go.mod                  # Módulo Go
+│   ├── go.mod                  # Definición del módulo Go (versión 1.26.2)
 │   └── src/
 │       └── main.go             # API REST en Go (puerto 8080)
 │
@@ -134,6 +134,23 @@ http://192.168.49.2:30007
 ```
 
 ## 📝 Componentes Detallados
+
+### Módulo Go (`backend/go.mod`)
+
+El archivo `go.mod` es la **declaración de módulo del proyecto Go**. Es similar a `package.json` en Node.js.
+
+```
+module backend
+go 1.26.2
+```
+
+- **`module backend`**: Nombre del módulo (namespace)
+- **`go 1.26.2`**: Versión mínima de Go requerida para compilar
+
+**¿Por qué está ahí?**
+- Go necesita saber la versión mínima de Go que el código requiere
+- Permite gestionar dependencias externas (aunque este proyecto no tiene)
+- Lo genera automáticamente con `go mod init backend`
 
 ### Backend (Go)
 
