@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodeselector-demo
+  labels:
+    app: nodeselector-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodeselector-demo
+  template:
+    metadata:
+      labels:
+        app: nodeselector-demo
+    spec:
+      nodeSelector:
+        lab: scheduling
+      containers:
+        - name: app
+          image: nginx:1.25-alpine
+          ports:
+            - containerPort: 80

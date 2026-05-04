@@ -12,6 +12,23 @@ Kubernetes is not a simple tool; it is a distributed system that operates throug
 
 At a high level, Kubernetes can be understood as a set of abstractions built to manage containerized workloads at scale. This repository touches, directly or indirectly, on the following areas:
 
+## 🧪 Practical Exercises
+
+The repository now includes hands-on labs grouped by topic:
+
+* [Pods](./pods/pod.md): direct Pod creation, labels, multi-container Pods, and basic limitations.
+* [ReplicaSets](./replicaSets/rs.md): selector behavior and Pod adoption through labels.
+* [Deployments](./deployments/README.md): rollout, rollback, scaling, labels, and troubleshooting commands.
+* [Services](./services/): ClusterIP and NodePort examples for stable access to workloads.
+* [Configuration](./configuration/README.md): ConfigMaps and Secrets consumed through environment variables and mounted files.
+* [Storage](./storage/README.md): `emptyDir` versus persistent storage with PersistentVolumeClaims.
+* [Resources and Scheduling](./resources/README.md): requests, limits, probes, and `nodeSelector`.
+* [Networking](./networking/README.md): Service DNS and NetworkPolicy isolation.
+* [Debugging](./debugging/README.md): CrashLoopBackOff, broken readiness, logs, events, and endpoints.
+* [K8s Hands-On App](./k8s-hands-on/README.md): distributed frontend/backend application running on Kubernetes.
+
+---
+
 ### Workload Management
 
 The foundation of Kubernetes revolves around how applications run:
