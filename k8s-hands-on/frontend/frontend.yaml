@@ -2,8 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
+  labels:
+    app: frontend
 spec:
   replicas: 2
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: frontend
@@ -17,7 +20,27 @@ spec:
           image: frontend:latest
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 80
+            - name: http
+              containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 150m
+              memory: 96Mi
 ---
 apiVersion: v1
 kind: Service
@@ -28,6 +51,7 @@ spec:
   selector:
     app: frontend
   ports:
-    - port: 80
+    - name: http
+      port: 80
       targetPort: 80
       nodePort: 30007

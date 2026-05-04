@@ -2,8 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
+  labels:
+    app: backend
 spec:
   replicas: 3
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: backend
@@ -16,18 +19,48 @@ spec:
         - name: backend
           image: backend:latest
           imagePullPolicy: IfNotPresent
+          env:
+            - name: APP_VERSION
+              value: "2.0.0"
+            - name: CLUSTER_NAME
+              value: "minikube"
           ports:
-            - containerPort: 8080
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: backend
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: backend
   ports:
-    - port: 80
+    - name: http
+      port: 80
       targetPort: 8080
-      nodePort: 30008

@@ -3,146 +3,558 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Request</title>
+    <title>K8s Hands-On Dashboard</title>
     <style>
+        :root {
+            color-scheme: light;
+            --bg: #f6f8fb;
+            --panel: #ffffff;
+            --panel-soft: #eef4f8;
+            --text: #17202a;
+            --muted: #617083;
+            --line: #d9e2ec;
+            --accent: #007f73;
+            --accent-dark: #00655c;
+            --danger: #d97706;
+            --warning: #b7791f;
+            --ok: #2f855a;
+            --shadow: 0 10px 30px rgba(23, 32, 42, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            margin: 0;
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
-        .container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+        button, input, select {
+            font: inherit;
         }
+
         button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
+            border: 0;
             cursor: pointer;
-            font-size: 16px;
         }
-        button:hover {
-            background-color: #0056b3;
+
+        .app {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 28px 0 40px;
         }
-        .response {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-left: 4px solid #007bff;
-            border-radius: 4px;
-            display: none;
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 22px;
         }
-        .response.show {
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .brand-mark {
+            display: grid;
+            width: 44px;
+            height: 44px;
+            place-items: center;
+            border-radius: 8px;
+            background: #102a43;
+            color: white;
+            font-weight: 800;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(1.45rem, 2.6vw, 2.2rem);
+            line-height: 1.05;
+            letter-spacing: 0;
+        }
+
+        .subtitle {
+            margin: 5px 0 0;
+            color: var(--muted);
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 38px;
+            padding: 0 14px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: var(--panel);
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--warning);
+        }
+
+        .dot.ok {
+            background: var(--ok);
+        }
+
+        .dot.bad {
+            background: var(--danger);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 18px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 18px 18px 0;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.05rem;
+        }
+
+        .panel-body {
+            padding: 18px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .metric {
+            min-height: 98px;
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel-soft);
+        }
+
+        .metric span {
             display: block;
+            color: var(--muted);
+            font-size: 0.84rem;
         }
-        .error {
-            border-left-color: #dc3545;
-            background-color: #fff3cd;
-            color: #721c24;
+
+        .metric strong {
+            display: block;
+            margin-top: 8px;
+            font-size: 1.8rem;
         }
-        .success {
-            border-left-color: #28a745;
-            background-color: #d4edda;
-            color: #155724;
+
+        .form {
+            display: grid;
+            grid-template-columns: minmax(180px, 1fr) 150px 120px auto;
+            gap: 10px;
+            margin-bottom: 16px;
         }
+
+        input, select {
+            width: 100%;
+            min-height: 42px;
+            padding: 0 12px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: white;
+            color: var(--text);
+        }
+
+        .btn {
+            min-height: 42px;
+            padding: 0 14px;
+            border-radius: 6px;
+            background: var(--accent);
+            color: white;
+            font-weight: 700;
+        }
+
+        .btn:hover {
+            background: var(--accent-dark);
+        }
+
+        .btn.secondary {
+            background: #334e68;
+        }
+
+        .btn.ghost {
+            border: 1px solid var(--line);
+            background: white;
+            color: var(--text);
+        }
+
+        .btn.danger {
+            background: var(--danger);
+        }
+
+        .task-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .task {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: white;
+        }
+
+        .check {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--line);
+            background: var(--panel-soft);
+            color: var(--ok);
+            font-weight: 900;
+        }
+
+        .task.done .task-title {
+            color: var(--muted);
+            text-decoration: line-through;
+        }
+
+        .task-title {
+            margin: 0 0 4px;
+            font-weight: 800;
+        }
+
+        .task-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 0.84rem;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 22px;
+            padding: 0 8px;
+            border-radius: 999px;
+            background: #e6fffa;
+            color: #00584f;
+            font-weight: 700;
+        }
+
+        .tag.alta {
+            background: #fff5f5;
+            color: #9b2c2c;
+        }
+
+        .tag.media {
+            background: #fffaf0;
+            color: #975a16;
+        }
+
+        .side-stack {
+            display: grid;
+            gap: 18px;
+        }
+
+        .kv {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .kv:last-child {
+            border-bottom: 0;
+        }
+
+        .kv span {
+            color: var(--muted);
+        }
+
+        code, pre {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        }
+
         pre {
-            background-color: #f1f3f5;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
+            min-height: 190px;
+            max-height: 340px;
+            overflow: auto;
+            margin: 0;
+            padding: 14px;
+            border-radius: 8px;
+            background: #102a43;
+            color: #d9f99d;
+            font-size: 0.85rem;
+        }
+
+        .notice {
+            min-height: 24px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 900px) {
+            .grid, .cards, .form {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Consumir API</h1>
-        
-        <button id="fetchBtn">Hacer Solicitud GET</button>
-        <button id="fetchPostBtn">Hacer Solicitud POST</button>
-        
-        <div id="response" class="response">
-            <h3>Respuesta:</h3>
-            <pre id="responseContent"></pre>
-        </div>
-    </div>
+    <main class="app">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark">K8s</div>
+                <div>
+                    <h1>Hands-On Control Plane</h1>
+                    <p class="subtitle">Frontend Nginx + API Go desplegados en Minikube</p>
+                </div>
+            </div>
+            <div class="status-pill" aria-live="polite">
+                <span id="statusDot" class="dot"></span>
+                <span id="statusText">Conectando con la API</span>
+            </div>
+        </header>
+
+        <section class="cards" aria-label="Metricas">
+            <article class="metric"><span>Requests</span><strong id="requests">0</strong></article>
+            <article class="metric"><span>Tareas</span><strong id="tasksTotal">0</strong></article>
+            <article class="metric"><span>Pendientes</span><strong id="tasksPending">0</strong></article>
+            <article class="metric"><span>Uptime</span><strong id="uptime">0s</strong></article>
+        </section>
+
+        <section class="grid">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>Checklist de despliegue</h2>
+                    <button class="btn ghost" id="refreshBtn">Actualizar</button>
+                </div>
+                <div class="panel-body">
+                    <form id="taskForm" class="form">
+                        <input id="titleInput" name="title" autocomplete="off" placeholder="Nueva tarea" required>
+                        <input id="ownerInput" name="owner" autocomplete="off" placeholder="Responsable">
+                        <select id="priorityInput" name="priority" aria-label="Prioridad">
+                            <option value="media">Media</option>
+                            <option value="alta">Alta</option>
+                            <option value="baja">Baja</option>
+                        </select>
+                        <button class="btn" type="submit">Crear</button>
+                    </form>
+                    <div id="notice" class="notice"></div>
+                    <div id="taskList" class="task-list"></div>
+                </div>
+            </div>
+
+            <aside class="side-stack">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2>Pod que respondio</h2>
+                    </div>
+                    <div class="panel-body" id="infoPanel">
+                        <div class="kv"><span>Hostname</span><strong id="hostname">-</strong></div>
+                        <div class="kv"><span>Cluster</span><strong id="cluster">-</strong></div>
+                        <div class="kv"><span>Version</span><strong id="version">-</strong></div>
+                        <div class="kv"><span>Hora servidor</span><strong id="serverTime">-</strong></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2>Respuesta API</h2>
+                        <button class="btn secondary" id="healthBtn">Health</button>
+                    </div>
+                    <div class="panel-body">
+                        <pre id="apiOutput">{}</pre>
+                    </div>
+                </div>
+            </aside>
+        </section>
+    </main>
 
     <script>
-        // ===== CONFIGURACIÓN DEL BACKEND =====
-        // Service K8s: backend (NodePort:30008)
-        const BACKEND_URL = 'http://192.168.49.2:30008';
+        const api = {
+            info: '/api/info',
+            metrics: '/api/metrics',
+            tasks: '/api/tasks',
+            health: '/api/healthz'
+        };
 
-        // ===== SOLICITUD GET =====
-        const fetchBtn = document.getElementById('fetchBtn');
-        fetchBtn.addEventListener('click', () => {
-            fetchDataFromBackend('GET');
+        const els = {
+            statusDot: document.getElementById('statusDot'),
+            statusText: document.getElementById('statusText'),
+            requests: document.getElementById('requests'),
+            tasksTotal: document.getElementById('tasksTotal'),
+            tasksPending: document.getElementById('tasksPending'),
+            uptime: document.getElementById('uptime'),
+            hostname: document.getElementById('hostname'),
+            cluster: document.getElementById('cluster'),
+            version: document.getElementById('version'),
+            serverTime: document.getElementById('serverTime'),
+            apiOutput: document.getElementById('apiOutput'),
+            taskList: document.getElementById('taskList'),
+            notice: document.getElementById('notice'),
+            taskForm: document.getElementById('taskForm'),
+            titleInput: document.getElementById('titleInput'),
+            ownerInput: document.getElementById('ownerInput'),
+            priorityInput: document.getElementById('priorityInput')
+        };
+
+        document.getElementById('refreshBtn').addEventListener('click', loadDashboard);
+        document.getElementById('healthBtn').addEventListener('click', async () => {
+            const data = await request(api.health);
+            showPayload(data);
         });
 
-        // ===== SOLICITUD POST =====
-        const fetchPostBtn = document.getElementById('fetchPostBtn');
-        fetchPostBtn.addEventListener('click', () => {
-            fetchDataFromBackend('POST');
+        els.taskForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const payload = {
+                title: els.titleInput.value,
+                owner: els.ownerInput.value,
+                priority: els.priorityInput.value
+            };
+            await request(api.tasks, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            els.taskForm.reset();
+            els.priorityInput.value = 'media';
+            await loadDashboard();
         });
 
-        // ===== FUNCIÓN PRINCIPAL =====
-        async function fetchDataFromBackend(method = 'GET') {
-            const responseDiv = document.getElementById('response');
-            const responseContent = document.getElementById('responseContent');
-
+        async function loadDashboard() {
             try {
-                // Mostrar que está cargando
-                responseContent.textContent = 'Cargando...';
-                responseDiv.classList.remove('error', 'success');
-                responseDiv.classList.add('show');
+                const [info, metrics, tasks] = await Promise.all([
+                    request(api.info),
+                    request(api.metrics),
+                    request(api.tasks)
+                ]);
 
-                const options = {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                };
-
-                // Si es POST, agregar body con datos
-                if (method === 'POST') {
-                    options.body = JSON.stringify({
-                        timestamp: new Date().toISOString(),
-                        message: 'Solicitud POST desde frontend'
-                    });
-                }
-
-                // Realizar la solicitud al backend (puerto 80)
-                const response = await fetch(`${BACKEND_URL}/`, options);
-
-                // Verificar si la respuesta es exitosa
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status}`);
-                }
-
-                // Parsear la respuesta como JSON
-                const data = await response.json();
-
-                // Mostrar la respuesta formateada
-                responseContent.innerHTML = `
-                    <strong>Respuesta del Backend:</strong>\n
-                    ⏰ <strong>Hora del servidor:</strong> ${new Date(data.time).toLocaleString()}\n
-                    🖥️ <strong>Hostname:</strong> ${data.hostname}\n\n
-                    <strong>JSON completo:</strong>\n${JSON.stringify(data, null, 2)}
-                `;
-                responseDiv.classList.remove('error');
-                responseDiv.classList.add('success');
-
+                setStatus(true, `API saludable en ${info.hostname}`);
+                renderInfo(info);
+                renderMetrics(metrics);
+                renderTasks(tasks.items || []);
+                showPayload({ info, metrics, tasks });
+                els.notice.textContent = `Actualizado ${new Date().toLocaleTimeString()}`;
             } catch (error) {
-                console.error('Error en la solicitud:', error);
-                responseContent.textContent = `❌ Error: ${error.message}\n\nAsegúrate de que el backend está corriendo en ${BACKEND_URL}`;
-                responseDiv.classList.remove('success');
-                responseDiv.classList.add('error');
+                setStatus(false, 'API no disponible');
+                els.notice.textContent = error.message;
+                showPayload({ error: error.message });
             }
         }
+
+        async function request(url, options = {}) {
+            const response = await fetch(url, options);
+            const text = await response.text();
+            const data = text ? JSON.parse(text) : {};
+            if (!response.ok) {
+                throw new Error(data.error || `HTTP ${response.status}`);
+            }
+            return data;
+        }
+
+        function renderInfo(info) {
+            els.hostname.textContent = info.hostname || '-';
+            els.cluster.textContent = info.cluster || '-';
+            els.version.textContent = info.version || '-';
+            els.serverTime.textContent = info.serverTime ? new Date(info.serverTime).toLocaleString() : '-';
+        }
+
+        function renderMetrics(metrics) {
+            els.requests.textContent = metrics.requests ?? 0;
+            els.tasksTotal.textContent = metrics.tasksTotal ?? 0;
+            els.tasksPending.textContent = metrics.tasksPending ?? 0;
+            els.uptime.textContent = formatDuration(metrics.uptimeSeconds || 0);
+        }
+
+        function renderTasks(tasks) {
+            els.taskList.innerHTML = '';
+            if (!tasks.length) {
+                els.taskList.innerHTML = '<div class="notice">No hay tareas registradas.</div>';
+                return;
+            }
+
+            for (const task of tasks) {
+                const row = document.createElement('article');
+                row.className = `task ${task.done ? 'done' : ''}`;
+                row.innerHTML = `
+                    <button class="check" title="Cambiar estado">${task.done ? '✓' : ''}</button>
+                    <div>
+                        <p class="task-title"></p>
+                        <div class="task-meta">
+                            <span class="tag ${task.priority}">${task.priority}</span>
+                            <span>${task.owner}</span>
+                            <span>#${task.id}</span>
+                        </div>
+                    </div>
+                    <button class="btn danger" title="Eliminar">Eliminar</button>
+                `;
+                row.querySelector('.task-title').textContent = task.title;
+                row.querySelector('.check').addEventListener('click', async () => {
+                    await request(`${api.tasks}/${task.id}`, { method: 'PATCH' });
+                    await loadDashboard();
+                });
+                row.querySelector('.danger').addEventListener('click', async () => {
+                    await request(`${api.tasks}/${task.id}`, { method: 'DELETE' });
+                    await loadDashboard();
+                });
+                els.taskList.appendChild(row);
+            }
+        }
+
+        function setStatus(ok, text) {
+            els.statusDot.className = `dot ${ok ? 'ok' : 'bad'}`;
+            els.statusText.textContent = text;
+        }
+
+        function showPayload(payload) {
+            els.apiOutput.textContent = JSON.stringify(payload, null, 2);
+        }
+
+        function formatDuration(seconds) {
+            if (seconds < 60) return `${seconds}s`;
+            const minutes = Math.floor(seconds / 60);
+            const rest = seconds % 60;
+            return `${minutes}m ${rest}s`;
+        }
+
+        loadDashboard();
+        window.setInterval(loadDashboard, 15000);
     </script>
 </body>
 </html>
