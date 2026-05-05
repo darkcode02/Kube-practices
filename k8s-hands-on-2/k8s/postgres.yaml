@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vanta-postgres-secret
+type: Opaque
+stringData:
+  POSTGRES_DB: vanta
+  POSTGRES_USER: vanta
+  POSTGRES_PASSWORD: vanta_password
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vanta-postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vanta-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vanta-postgres
+  template:
+    metadata:
+      labels:
+        app: vanta-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: vanta-postgres-secret
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - vanta
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: vanta-postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vanta-postgres
+spec:
+  selector:
+    app: vanta-postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432

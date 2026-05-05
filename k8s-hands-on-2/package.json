@@ -1,0 +1,16 @@
+{
+  "name": "vanta-wear-store",
+  "version": "1.0.0",
+  "description": "Tienda de ropa con frontend, API Node y PostgreSQL lista para Minikube.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.3",
+    "pg": "^8.11.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

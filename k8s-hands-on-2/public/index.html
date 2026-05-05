@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vanta Wear | Tienda de ropa</title>
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#inicio" aria-label="Vanta Wear inicio">
+        <span class="brand-mark">V</span>
+        <span>Vanta Wear</span>
+      </a>
+
+      <nav class="main-nav" aria-label="Principal">
+        <a href="#novedades">Novedades</a>
+        <a href="#catalogo">Catálogo</a>
+        <a href="#publicar">Vender</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-btn" id="loginBtn" type="button" aria-label="Iniciar sesión" title="Iniciar sesión">
+          <span data-icon="user"></span>
+        </button>
+        <button class="icon-btn cart-trigger" id="cartBtn" type="button" aria-label="Abrir carrito" title="Carrito">
+          <span data-icon="bag"></span>
+          <strong id="cartCount">0</strong>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="inicio">
+        <picture>
+          <source media="(max-width: 720px)" srcset="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80" />
+          <img src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1800&q=82" alt="Modelo usando una chaqueta urbana negra" />
+        </picture>
+        <div class="hero-content">
+          <p class="eyebrow">Drop urbano 2026</p>
+          <h1>Ropa lista para moverse contigo.</h1>
+          <p>Prendas limpias, funcionales y con tallas visibles antes de comprar.</p>
+          <div class="hero-actions">
+            <a class="primary-link" href="#catalogo">Comprar ahora</a>
+            <a class="secondary-link" href="#publicar">Publicar prenda</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="feature-strip" id="novedades" aria-label="Beneficios">
+        <article>
+          <span data-icon="truck"></span>
+          <div>
+            <h2>Envío claro</h2>
+            <p>Calcula tu pedido desde el carrito antes de finalizar.</p>
+          </div>
+        </article>
+        <article>
+          <span data-icon="ruler"></span>
+          <div>
+            <h2>Tallas visibles</h2>
+            <p>Cada prenda muestra disponibilidad real por talla.</p>
+          </div>
+        </article>
+        <article>
+          <span data-icon="shield"></span>
+          <div>
+            <h2>Venta simple</h2>
+            <p>Sube nuevas prendas desde el panel integrado.</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="catalog-section" id="catalogo">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Comprar</p>
+            <h2>Catálogo destacado</h2>
+          </div>
+          <div class="filter-tabs" role="tablist" aria-label="Filtrar por categoría">
+            <button class="active" type="button" data-filter="all">Todo</button>
+            <button type="button" data-filter="Chaquetas">Chaquetas</button>
+            <button type="button" data-filter="Camisetas">Camisetas</button>
+            <button type="button" data-filter="Pantalones">Pantalones</button>
+            <button type="button" data-filter="Calzado">Calzado</button>
+          </div>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+      </section>
+
+      <section class="sell-section" id="publicar">
+        <div class="sell-copy">
+          <p class="eyebrow">Panel vendedor</p>
+          <h2>Monta una nueva prenda en minutos.</h2>
+          <p>Agrega nombre, categoría, precio, tallas disponibles e imagen. La prenda queda publicada al instante en la base de datos.</p>
+        </div>
+
+        <form class="seller-form" id="sellerForm">
+          <label>
+            Nombre de la prenda
+            <input name="name" type="text" placeholder="Ej. Hoodie Core Negro" required />
+          </label>
+          <div class="form-row">
+            <label>
+              Categoría
+              <select name="category" required>
+                <option>Chaquetas</option>
+                <option>Camisetas</option>
+                <option>Pantalones</option>
+                <option>Calzado</option>
+              </select>
+            </label>
+            <label>
+              Precio COP
+              <input name="price" type="number" min="10000" step="1000" placeholder="189000" required />
+            </label>
+          </div>
+          <label>
+            URL de imagen
+            <input name="image" type="url" placeholder="https://..." required />
+          </label>
+          <fieldset>
+            <legend>Tallas disponibles</legend>
+            <div class="size-checks">
+              <label><input type="checkbox" name="sizes" value="XS" /> XS</label>
+              <label><input type="checkbox" name="sizes" value="S" /> S</label>
+              <label><input type="checkbox" name="sizes" value="M" /> M</label>
+              <label><input type="checkbox" name="sizes" value="L" /> L</label>
+              <label><input type="checkbox" name="sizes" value="XL" /> XL</label>
+              <label><input type="checkbox" name="sizes" value="42" /> 42</label>
+            </div>
+          </fieldset>
+          <button class="submit-btn" type="submit">Publicar prenda</button>
+          <p class="form-note" id="sellerMessage" role="status"></p>
+        </form>
+      </section>
+    </main>
+
+    <aside class="cart-drawer" id="cartDrawer" aria-hidden="true" aria-label="Carrito de compras">
+      <div class="drawer-panel">
+        <div class="drawer-header">
+          <h2>Carrito</h2>
+          <button class="icon-btn" id="closeCartBtn" type="button" aria-label="Cerrar carrito" title="Cerrar">
+            <span data-icon="x"></span>
+          </button>
+        </div>
+        <div class="cart-items" id="cartItems"></div>
+        <div class="cart-summary">
+          <div>
+            <span>Subtotal</span>
+            <strong id="cartSubtotal">$0</strong>
+          </div>
+          <button class="checkout-btn" type="button">Finalizar compra</button>
+        </div>
+      </div>
+    </aside>
+
+    <dialog class="login-modal" id="loginModal">
+      <form method="dialog" class="login-box" id="loginForm">
+        <button class="icon-btn modal-close" id="closeLoginBtn" type="button" aria-label="Cerrar" title="Cerrar">
+          <span data-icon="x"></span>
+        </button>
+        <p class="eyebrow">Cuenta Vanta</p>
+        <h2>Ingresa para vender y comprar más rápido.</h2>
+        <label>
+          Correo
+          <input name="email" type="email" placeholder="tu@email.com" required />
+        </label>
+        <label>
+          Contraseña
+          <input name="password" type="password" placeholder="••••••••" required />
+        </label>
+        <button class="submit-btn" type="submit">Entrar</button>
+        <p id="loginMessage" role="status"></p>
+      </form>
+    </dialog>
+
+    <template id="productTemplate">
+      <article class="product-card">
+        <div class="product-media">
+          <img alt="" />
+          <span class="product-category"></span>
+        </div>
+        <div class="product-info">
+          <div>
+            <h3></h3>
+            <p class="price"></p>
+          </div>
+          <div class="sizes" aria-label="Tallas disponibles"></div>
+          <button class="add-btn" type="button">Agregar al carrito</button>
+        </div>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
