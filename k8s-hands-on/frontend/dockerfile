@@ -1,4 +1,8 @@
+# Imagen del frontend: nginx sirve el HTML estático y actúa como proxy hacia la API.
 FROM nginx:alpine
+# Copia la interfaz al directorio público estándar de nginx.
 COPY index.html /usr/share/nginx/html/index.html
+# Reemplaza la configuración default para enrutar /api hacia el Service backend.
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+# Puerto HTTP que usará el Service de Kubernetes.
 EXPOSE 80

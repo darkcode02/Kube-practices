@@ -1,3 +1,5 @@
+# Ejemplo: volumen emptyDir para datos temporales compartidos por el Pod.
+# El contenido existe mientras el Pod exista; si el Pod se elimina, se pierde.
 apiVersion: v1
 kind: Pod
 metadata:
@@ -10,8 +12,10 @@ spec:
       image: busybox:1.36
       command: ["sh", "-c", "while true; do ls -la /data; sleep 20; done"]
       volumeMounts:
+        # /data apunta al volumen temporal creado por Kubernetes.
         - name: scratch
           mountPath: /data
   volumes:
     - name: scratch
+      # emptyDir se crea vacío al iniciar el Pod.
       emptyDir: {}

@@ -1,24 +1,30 @@
+# Base de datos PostgreSQL para Vanta Wear.
+# Incluye Secret, PVC, Deployment y Service para practicar una dependencia stateful.
 apiVersion: v1
 kind: Secret
 metadata:
   name: vanta-postgres-secret
 type: Opaque
 stringData:
+  # stringData permite escribir valores legibles; Kubernetes los guarda codificados.
   POSTGRES_DB: vanta
   POSTGRES_USER: vanta
   POSTGRES_PASSWORD: vanta_password
 ---
+# PVC para conservar datos aunque se recree el Pod de Postgres.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: vanta-postgres-pvc
 spec:
   accessModes:
+    # Acceso de lectura/escritura desde un nodo, suficiente para un Postgres de laboratorio.
     - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
 ---
+# Deployment de una sola réplica: Postgres no debe escalarse así sin un patrón stateful.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -39,12 +45,15 @@ spec:
           ports:
             - containerPort: 5432
           envFrom:
+            # Carga POSTGRES_DB, POSTGRES_USER y POSTGRES_PASSWORD desde el Secret.
             - secretRef:
                 name: vanta-postgres-secret
           volumeMounts:
+            # Directorio donde Postgres guarda sus datos.
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
           readinessProbe:
+            # pg_isready valida que Postgres acepte conexiones antes de recibir tráfico.
             exec:
               command:
                 - pg_isready
@@ -55,8 +64,10 @@ spec:
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
+            # Une el Pod con el almacenamiento persistente declarado arriba.
             claimName: vanta-postgres-pvc
 ---
+# Service interno usado por la app mediante DB_HOST=vanta-postgres.
 apiVersion: v1
 kind: Service
 metadata:

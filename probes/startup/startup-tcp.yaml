@@ -1,0 +1,81 @@
+# ========================================
+# STARTUP PROBE - TCP SOCKET
+# ========================================
+# Verifica si el contenedor está escuchando en un puerto durante la inicialización.
+# Útil para servicios que necesitan tiempo para abrir puertos de escucha.
+#
+# Caso de uso: Servidores de aplicaciones, bases de datos en contenedores,
+# o cualquier servicio que tarde en estar listo para aceptar conexiones.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: startup-tcp-example
+  labels:
+    app: slow-db
+spec:
+  containers:
+  - name: database-server
+    image: registry.k8s.io/busybox:1.27.2
+    command:
+    - /bin/sh
+    - -c
+    - |
+      echo "Inicializando base de datos..."
+      
+      # Simular inicialización lenta (carga de archivos, etc)
+      sleep 15
+      
+      echo "Base de datos lista, iniciando servidor..."
+      
+      # Iniciar servidor escuchando en puerto 3306
+      nc -l -p 3306 -e echo "Database Ready" &
+      
+      echo "Servidor de base de datos escuchando en puerto 3306"
+      
+      # Mantener el contenedor ejecutándose
+      sleep 3600
+    
+    ports:
+    - name: db-port
+      containerPort: 3306
+      protocol: TCP
+    
+    # Definición de la startup probe con TCP Socket
+    startupProbe:
+      # Tipo de probe: conexión TCP
+      tcpSocket:
+        # Puerto a verificar durante el startup
+        port: 3306
+      
+      # Tiempo de espera antes de iniciar los chequeos
+      initialDelaySeconds: 0
+      
+      # Intervalo entre chequeos (segundos)
+      # Revisar cada 5 segundos
+      periodSeconds: 5
+      
+      # Tiempo máximo para establecer conexión (segundos)
+      timeoutSeconds: 2
+      
+      # Número máximo de fallos antes de considerar el Pod como fallido
+      # 30 intentos * 5 segundos = 150 segundos máximo
+      failureThreshold: 30
+      
+      # Número de éxitos para considerar iniciado
+      successThreshold: 1
+    
+    # Una vez que el startup probe pasa, se ejecutan liveness y readiness
+    livenessProbe:
+      tcpSocket:
+        port: 3306
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      failureThreshold: 3
+    
+    readinessProbe:
+      tcpSocket:
+        port: 3306
+      initialDelaySeconds: 0
+      periodSeconds: 5
+      failureThreshold: 2

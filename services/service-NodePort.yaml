@@ -1,3 +1,5 @@
+# Ejemplo: Service NodePort para exponer una app fuera del cluster local.
+# NodePort abre un puerto en cada nodo y lo redirige al Service.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -7,6 +9,7 @@ metadata:
 spec:
   replicas: 3
   selector:
+    # El Deployment administra Pods con app=service-3.
     matchLabels:
       app: service-3
   template:
@@ -28,6 +31,7 @@ metadata:
   labels:
     app: service-3
 spec:
+  # NodePort permite probar el servicio desde fuera del cluster, por ejemplo en Minikube.
   type: NodePort
   selector:
     app: service-3

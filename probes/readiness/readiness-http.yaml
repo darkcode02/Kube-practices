@@ -1,0 +1,57 @@
+# ========================================
+# READINESS PROBE - HTTP GET
+# ========================================
+# La readiness probe verifica si el contenedor está listo para recibir tráfico.
+# Si falla, el contenedor se elimina de los endpoints del servicio,
+# pero el Pod no se reinicia.
+# 
+# Caso de uso: Un servidor web que necesita tiempo para cargar datos en caché
+# antes de estar listo para servir solicitudes.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: readiness-http-example
+  labels:
+    app: web-server
+spec:
+  containers:
+  - name: web-app
+    image: registry.k8s.io/e2e-test-images/agnhost:2.40
+    args:
+    - liveness
+    ports:
+    - name: http
+      containerPort: 8080
+      protocol: TCP
+    
+    # Definición de la readiness probe con HTTP GET
+    readinessProbe:
+      # Tipo de probe: HTTP GET
+      httpGet:
+        # Ruta del endpoint de salud
+        path: /readyz
+        # Puerto en el que escucha la aplicación
+        port: 8080
+        # Esquema HTTP o HTTPS
+        scheme: HTTP
+        # Headers personalizados (opcional)
+        httpHeaders:
+        - name: Custom-Header
+          value: MyValue
+      
+      # Tiempo de espera antes de iniciar los chequeos (segundos)
+      # Permite que la aplicación tenga tiempo para inicializarse
+      initialDelaySeconds: 5
+      
+      # Intervalo entre chequeos consecutivos (segundos)
+      periodSeconds: 5
+      
+      # Tiempo máximo para esperar una respuesta (segundos)
+      timeoutSeconds: 2
+      
+      # Número de fallos consecutivos para marcar como "No Listo"
+      failureThreshold: 3
+      
+      # Número de éxitos consecutivos para marcar como "Listo"
+      successThreshold: 1

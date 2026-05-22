@@ -1,3 +1,4 @@
+// Lógica del navegador para Vanta Wear: catálogo, filtros, login demo y carrito.
 const icons = {
   user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>',
   bag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 8h12l-1 13H7L6 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg>',
@@ -13,6 +14,7 @@ const money = new Intl.NumberFormat("es-CO", {
   maximumFractionDigits: 0,
 });
 
+// Referencias a elementos del DOM que se actualizan con datos de la API.
 const productGrid = document.querySelector("#productGrid");
 const productTemplate = document.querySelector("#productTemplate");
 const cartDrawer = document.querySelector("#cartDrawer");
@@ -30,8 +32,10 @@ let products = [];
 let cart = [];
 let activeFilter = "all";
 
+// Identificador local para separar carritos sin implementar sesiones de servidor completas.
 const sessionId = getSessionId();
 
+// Inserta los SVG definidos arriba en botones y bloques de beneficios.
 document.querySelectorAll("[data-icon]").forEach((node) => {
   node.innerHTML = icons[node.dataset.icon] || "";
 });
@@ -70,6 +74,7 @@ loginForm.addEventListener("submit", async (event) => {
   }
 });
 
+// Los filtros solo cambian estado local; el catálogo completo ya está cargado en memoria.
 document.querySelectorAll("[data-filter]").forEach((button) => {
   button.addEventListener("click", () => {
     activeFilter = button.dataset.filter;
@@ -115,6 +120,7 @@ sellerForm.addEventListener("submit", async (event) => {
 });
 
 async function init() {
+  // Carga catálogo y carrito en paralelo para pintar la tienda inicial.
   productGrid.innerHTML = '<p class="cart-empty">Cargando catálogo...</p>';
   await Promise.all([loadProducts(), loadCart()]);
   renderProducts();
@@ -130,6 +136,7 @@ async function loadCart() {
 }
 
 function renderProducts() {
+  // Renderiza cards desde un <template>, evitando duplicar HTML en JavaScript.
   productGrid.innerHTML = "";
   const visibleProducts = activeFilter === "all" ? products : products.filter((product) => product.category === activeFilter);
 
@@ -163,6 +170,7 @@ function renderProducts() {
     });
 
     addButton.addEventListener("click", async () => {
+      // Persiste la línea del carrito en el backend antes de abrir el drawer.
       addButton.disabled = true;
       addButton.textContent = "Agregando...";
 
@@ -193,6 +201,7 @@ function renderProducts() {
 }
 
 function renderCart() {
+  // El carrito se vuelve a pintar completo cada vez que cambia su arreglo local.
   cartItems.innerHTML = "";
 
   if (!cart.length) {
@@ -246,6 +255,7 @@ function renderCart() {
 }
 
 async function api(path, options = {}) {
+  // Helper único para llamadas fetch con JSON y manejo homogéneo de errores.
   const response = await fetch(path, {
     method: options.method || "GET",
     headers: options.body ? { "Content-Type": "application/json" } : undefined,
@@ -261,6 +271,7 @@ async function api(path, options = {}) {
 }
 
 function getSessionId() {
+  // localStorage conserva el mismo carrito al recargar la página.
   const existing = localStorage.getItem("vanta-session-id");
   if (existing) return existing;
 

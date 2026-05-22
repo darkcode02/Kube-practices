@@ -1,3 +1,5 @@
+# Ejemplo: Namespace + Deployment + NodePort en un solo archivo.
+# Permite practicar aislamiento por namespace y exposición externa del servicio.
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -13,6 +15,7 @@ metadata:
 spec:
   replicas: 3
   selector: 
+    # Debe coincidir con las labels del template.
     matchLabels:
       app: nginx
   template:
@@ -38,5 +41,5 @@ spec:
   - protocol: TCP
     port: 80       # Puerto del servicio
     targetPort: 80 # Puerto del contenedor
-    nodePort: 30080 # Puerto expuesto en localhost
+    nodePort: 30080 # Puerto fijo expuesto en el nodo para acceder desde fuera del cluster.
   type: NodePort

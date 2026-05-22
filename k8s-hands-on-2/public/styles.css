@@ -1,4 +1,6 @@
+/* Estilos de Vanta Wear: layout de tienda, catálogo, carrito y formularios. */
 :root {
+  /* Variables compartidas para mantener colores y sombras consistentes. */
   --ink: #111111;
   --muted: #6d6d6d;
   --line: #dedede;
@@ -38,6 +40,7 @@ a {
 }
 
 .site-header {
+  /* Header fijo para mantener navegación y carrito siempre accesibles. */
   position: sticky;
   top: 0;
   z-index: 10;
@@ -60,6 +63,7 @@ a {
 .drawer-header,
 .cart-summary div,
 .form-row {
+  /* Agrupa patrones flex reutilizados por piezas pequeñas de la interfaz. */
   display: flex;
   align-items: center;
 }
@@ -137,6 +141,7 @@ a {
 }
 
 .hero {
+  /* Primer bloque visual de la tienda, con imagen real y llamadas de acción. */
   position: relative;
   min-height: calc(100vh - 72px);
   display: grid;

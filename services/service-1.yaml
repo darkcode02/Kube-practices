@@ -1,3 +1,5 @@
+# Ejemplo: Service sin type explícito; Kubernetes usa ClusterIP por defecto.
+# Útil para ver cómo un Service interno balancea tráfico hacia varias réplicas.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -7,6 +9,7 @@ metadata:
 spec:
   replicas: 3
   selector:
+    # Une el Deployment con los Pods creados desde el template.
     matchLabels:
       app: service-1
   template:
@@ -28,6 +31,7 @@ metadata:
     app: service-1
 spec:
   selector:
+    # Une el Service con los Pods del Deployment.
     app: service-1
   ports:
   - protocol: TCP

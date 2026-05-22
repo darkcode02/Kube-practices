@@ -1,3 +1,5 @@
+# Frontend del laboratorio k8s-hands-on.
+# Deployment sirve archivos estáticos con nginx y Service NodePort lo expone localmente.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,8 +8,10 @@ metadata:
     app: frontend
 spec:
   replicas: 2
+  # Conserva pocas revisiones para practicar rollbacks sin acumular historial innecesario.
   revisionHistoryLimit: 3
   selector:
+    # Conecta el Deployment con los Pods del template.
     matchLabels:
       app: frontend
   template:
@@ -23,18 +27,21 @@ spec:
             - name: http
               containerPort: 80
           readinessProbe:
+            # El Pod entra al Service solo cuando nginx responde.
             httpGet:
               path: /
               port: http
             initialDelaySeconds: 3
             periodSeconds: 5
           livenessProbe:
+            # Si nginx deja de responder, Kubernetes reinicia el contenedor.
             httpGet:
               path: /
               port: http
             initialDelaySeconds: 10
             periodSeconds: 10
           resources:
+            # Valores pequeños para laboratorio local.
             requests:
               cpu: 25m
               memory: 32Mi
@@ -42,6 +49,7 @@ spec:
               cpu: 150m
               memory: 96Mi
 ---
+# NodePort para abrir el frontend desde el host del cluster.
 apiVersion: v1
 kind: Service
 metadata:
@@ -49,9 +57,11 @@ metadata:
 spec:
   type: NodePort
   selector:
+    # Debe apuntar a las labels del Pod frontend.
     app: frontend
   ports:
     - name: http
       port: 80
       targetPort: 80
+      # Puerto fijo útil para acceder en Minikube o clusters locales.
       nodePort: 30007

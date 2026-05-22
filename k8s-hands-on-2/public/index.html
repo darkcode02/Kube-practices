@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Interfaz de Vanta Wear: tienda usada para practicar app + Postgres en Kubernetes. -->
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -8,6 +9,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <!-- Header persistente con navegación, login demo y acceso al carrito. -->
     <header class="site-header">
       <a class="brand" href="#inicio" aria-label="Vanta Wear inicio">
         <span class="brand-mark">V</span>
@@ -32,6 +34,7 @@
     </header>
 
     <main>
+      <!-- Hero comercial de la tienda; el catálogo real se carga más abajo desde la API. -->
       <section class="hero" id="inicio">
         <picture>
           <source media="(max-width: 720px)" srcset="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80" />
@@ -48,6 +51,7 @@
         </div>
       </section>
 
+      <!-- Bloque estático para practicar composición visual junto al catálogo dinámico. -->
       <section class="feature-strip" id="novedades" aria-label="Beneficios">
         <article>
           <span data-icon="truck"></span>
@@ -72,6 +76,7 @@
         </article>
       </section>
 
+      <!-- Catálogo dinámico: app.js llena productGrid consultando /api/products. -->
       <section class="catalog-section" id="catalogo">
         <div class="section-heading">
           <div>
@@ -89,6 +94,7 @@
         <div class="product-grid" id="productGrid"></div>
       </section>
 
+      <!-- Formulario que crea productos nuevos en PostgreSQL mediante POST /api/products. -->
       <section class="sell-section" id="publicar">
         <div class="sell-copy">
           <p class="eyebrow">Panel vendedor</p>
@@ -137,6 +143,7 @@
       </section>
     </main>
 
+    <!-- Carrito lateral: app.js lo sincroniza con /api/cart usando un sessionId local. -->
     <aside class="cart-drawer" id="cartDrawer" aria-hidden="true" aria-label="Carrito de compras">
       <div class="drawer-panel">
         <div class="drawer-header">
@@ -156,6 +163,7 @@
       </div>
     </aside>
 
+    <!-- Login simplificado para el laboratorio; no implementa autenticación completa. -->
     <dialog class="login-modal" id="loginModal">
       <form method="dialog" class="login-box" id="loginForm">
         <button class="icon-btn modal-close" id="closeLoginBtn" type="button" aria-label="Cerrar" title="Cerrar">
@@ -176,6 +184,7 @@
       </form>
     </dialog>
 
+    <!-- Template reutilizado por app.js para renderizar cada producto del catálogo. -->
     <template id="productTemplate">
       <article class="product-card">
         <div class="product-media">

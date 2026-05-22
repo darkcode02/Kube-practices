@@ -1,0 +1,56 @@
+# ========================================
+# READINESS PROBE - TCP SOCKET
+# ========================================
+# Verifica si el contenedor está escuchando en un puerto específico.
+# Intenta establecer una conexión TCP; si tiene éxito, el contenedor está "Listo".
+#
+# Caso de uso: Bases de datos, servidores de aplicaciones, o servicios
+# que necesitan estar escuchando en un puerto antes de procesamiento.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: readiness-tcp-example
+  labels:
+    app: database
+spec:
+  containers:
+  - name: postgres-simulator
+    image: registry.k8s.io/busybox:1.27.2
+    command:
+    - /bin/sh
+    - -c
+    - |
+      # Iniciar un servidor simple escuchando en puerto 5432
+      # Simular una base de datos
+      (sleep 8 && nc -l -p 5432 -e echo "Connected") &
+      # Mantener el contenedor ejecutándose
+      sleep 3600
+    
+    ports:
+    - name: db
+      containerPort: 5432
+      protocol: TCP
+    
+    # Definición de la readiness probe con TCP Socket
+    readinessProbe:
+      # Tipo de probe: conexión TCP
+      tcpSocket:
+        # Puerto en el que se intentará conectar
+        port: 5432
+      
+      # Tiempo de espera antes de iniciar los chequeos (segundos)
+      # Permite que la aplicación inicie el servidor
+      initialDelaySeconds: 5
+      
+      # Intervalo entre chequeos consecutivos (segundos)
+      periodSeconds: 10
+      
+      # Tiempo máximo para establecer la conexión (segundos)
+      timeoutSeconds: 2
+      
+      # Número de fallos consecutivos para marcar como "No Listo"
+      failureThreshold: 3
+      
+      # Número de éxitos consecutivos para marcar como "Listo"
+      successThreshold: 1

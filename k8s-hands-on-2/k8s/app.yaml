@@ -1,3 +1,5 @@
+# Aplicación Vanta Wear: API + frontend Express conectada a PostgreSQL.
+# Este manifiesto despliega la app y la expone con NodePort para pruebas locales.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -5,6 +7,7 @@ metadata:
 spec:
   replicas: 1
   selector:
+    # Debe coincidir con template.metadata.labels.
     matchLabels:
       app: vanta-store
   template:
@@ -19,6 +22,7 @@ spec:
           ports:
             - containerPort: 3000
           env:
+            # PORT configura Express; las variables DB conectan con el Service de Postgres.
             - name: PORT
               value: "3000"
             - name: DB_HOST
@@ -28,6 +32,7 @@ spec:
             - name: DB_NAME
               valueFrom:
                 secretKeyRef:
+                  # Las credenciales se leen desde el Secret definido en postgres.yaml.
                   name: vanta-postgres-secret
                   key: POSTGRES_DB
             - name: DB_USER
@@ -41,18 +46,21 @@ spec:
                   name: vanta-postgres-secret
                   key: POSTGRES_PASSWORD
           readinessProbe:
+            # Evita enviar tráfico antes de que la app y la base de datos respondan.
             httpGet:
               path: /healthz
               port: 3000
             initialDelaySeconds: 8
             periodSeconds: 5
           livenessProbe:
+            # Reinicia la app si el endpoint de salud deja de responder.
             httpGet:
               path: /healthz
               port: 3000
             initialDelaySeconds: 20
             periodSeconds: 15
 ---
+# Service público del laboratorio para abrir la tienda desde el host.
 apiVersion: v1
 kind: Service
 metadata:
@@ -60,9 +68,11 @@ metadata:
 spec:
   type: NodePort
   selector:
+    # Envía tráfico a los Pods del Deployment vanta-store.
     app: vanta-store
   ports:
     - name: http
       port: 80
       targetPort: 3000
+      # Puerto fijo elegido para simplificar las pruebas del ejemplo.
       nodePort: 30080

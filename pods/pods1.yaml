@@ -1,4 +1,5 @@
-#ejemplo crear un pod nginx desde un manifest sencillo
+# Ejemplo: crear un Pod nginx desde un manifiesto sencillo.
+# Es el recurso mínimo para practicar kubectl apply, get, describe y delete.
 apiVersion: v1
 kind: Pod
 metadata:

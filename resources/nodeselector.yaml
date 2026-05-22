@@ -1,3 +1,5 @@
+# Ejemplo: scheduling con nodeSelector.
+# El Pod solo podrá ejecutarse en nodos que tengan la label lab=scheduling.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,6 +16,7 @@ spec:
       labels:
         app: nodeselector-demo
     spec:
+      # Requiere etiquetar un nodo antes, por ejemplo: kubectl label node <node> lab=scheduling
       nodeSelector:
         lab: scheduling
       containers:

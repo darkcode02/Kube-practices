@@ -1,3 +1,5 @@
+# Ejemplo: Pod con dos contenedores compartiendo el mismo ciclo de vida y red.
+# Sirve para estudiar el patrón sidecar: un contenedor principal y otro auxiliar.
 apiVersion: v1
 kind: Pod
 metadata:
@@ -5,6 +7,7 @@ metadata:
   labels:
     app: app-nginx-2
 spec:
+  # Ambos contenedores se programan juntos en el mismo nodo y comparten localhost.
   containers:
     - name: contenedor-1
       image: nginx:1.25
@@ -15,4 +18,5 @@ spec:
       image: alpine:3.19
       ports:
         - containerPort: 81
+      # Mantiene vivo el contenedor auxiliar para observarlo junto al nginx.
       command: ["sh", "-c", "while true; do echo 'sidecar activo'; sleep 10; done"]

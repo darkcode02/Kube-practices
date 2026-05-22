@@ -1,3 +1,5 @@
+# Ejemplo: LimitRange con mínimos y máximos permitidos por contenedor.
+# Sirve para ver cómo un namespace puede rechazar Pods fuera de los rangos definidos.
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -13,9 +15,11 @@ metadata:
 spec:
   limits:
     - max:
+        # Ningún contenedor del namespace puede superar estos limits.
         cpu: 1
         memory: 1Gi
       min:
+        # Ningún contenedor puede solicitar menos que estos valores mínimos.
         cpu: 0.1
         memory: 500Mi
       type: Container
@@ -30,6 +34,7 @@ spec:
     - name: cont1
       image: nginx:alpine
       resources:
+        # Estos valores cumplen con el rango definido por el LimitRange.
         limits:
           cpu: 0.5
           memory: 500Mi

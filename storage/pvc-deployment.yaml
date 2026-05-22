@@ -1,14 +1,18 @@
+# Ejemplo: PersistentVolumeClaim montado dentro de un Deployment.
+# Muestra cómo separar el ciclo de vida del almacenamiento del ciclo de vida del Pod.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: nginx-html-pvc
 spec:
+  # ReadWriteOnce permite montar el volumen en un nodo a la vez.
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
 ---
+# Deployment que consume el PVC para servir archivos desde la ruta HTML de nginx.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -31,9 +35,11 @@ spec:
           ports:
             - containerPort: 80
           volumeMounts:
+            # Monta el almacenamiento persistente donde nginx busca contenido estático.
             - name: html
               mountPath: /usr/share/nginx/html
       volumes:
         - name: html
           persistentVolumeClaim:
+            # Vincula este volumen del Pod con el PVC declarado arriba.
             claimName: nginx-html-pvc

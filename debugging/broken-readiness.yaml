@@ -1,3 +1,5 @@
+# Ejemplo de debugging: readinessProbe mal configurada.
+# nginx responde en /, pero la probe apunta a /healthz, así que el Pod no queda Ready.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,11 +23,13 @@ spec:
             - containerPort: 80
           readinessProbe:
             httpGet:
+              # Ruta incorrecta para provocar fallos de readiness.
               path: /healthz
               port: 80
             initialDelaySeconds: 3
             periodSeconds: 5
 ---
+# El Service no tendrá endpoints listos mientras la readinessProbe falle.
 apiVersion: v1
 kind: Service
 metadata:

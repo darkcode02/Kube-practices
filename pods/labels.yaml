@@ -1,8 +1,11 @@
+# Ejemplo: dos Pods con etiquetas distintas para practicar filtros y selectores.
+# Las labels son la base para que Services, Deployments y comandos kubectl agrupen recursos.
 apiVersion: v1
 kind: Pod
 metadata:
   name: pod-test-1
   labels:
+    # Este Pod representa una capa frontend en ambiente de desarrollo.
     app: front
     env: dev
 spec:
@@ -15,6 +18,7 @@ kind: Pod
 metadata:
   name: pod-test-2
   labels:
+    # Este Pod representa una capa backend en el mismo ambiente.
     app: backend
     env: dev
 spec:

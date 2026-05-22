@@ -1,0 +1,26 @@
+# Ejemplo: probes por socket TCP.
+# Valida apertura de puerto, no contenido HTTP; sirve para procesos que no tienen endpoint de salud.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: goproxy
+  labels:
+    app: goproxy
+spec:
+  containers:
+  - name: goproxy
+    image: registry.k8s.io/goproxy:0.1
+    ports:
+    - containerPort: 8080
+    readinessProbe:
+      tcpSocket:
+        # Kubernetes intenta abrir conexión TCP al puerto indicado.
+        port: 8080
+      initialDelaySeconds: 15
+      periodSeconds: 10
+    livenessProbe:
+      tcpSocket:
+        # Si el puerto deja de aceptar conexiones, el contenedor se considera no vivo.
+        port: 8080
+      initialDelaySeconds: 15
+      periodSeconds: 10

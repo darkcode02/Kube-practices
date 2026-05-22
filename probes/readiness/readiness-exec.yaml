@@ -1,0 +1,55 @@
+# ========================================
+# READINESS PROBE - EXEC (Command Execution)
+# ========================================
+# Ejecuta un comando dentro del contenedor para verificar si está listo.
+# El comando debe retornar código de salida 0 para considerar el contenedor "Listo".
+#
+# Caso de uso: Una aplicación que necesita verificaciones complejas,
+# como revisar si una base de datos está accesible o si ciertos archivos existen.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: readiness-exec-example
+  labels:
+    app: app-with-checks
+spec:
+  containers:
+  - name: app
+    image: registry.k8s.io/busybox:1.27.2
+    command:
+    - /bin/sh
+    - -c
+    - |
+      # Crear un archivo después de 10 segundos simulando inicialización
+      sleep 10
+      touch /tmp/ready
+      # Mantener el contenedor ejecutándose
+      sleep 3600
+    
+    # Definición de la readiness probe con EXEC
+    readinessProbe:
+      # Tipo de probe: ejecutar comando
+      exec:
+        # Comando a ejecutar dentro del contenedor
+        # Retorna 0 si el archivo existe, 1 si no existe
+        command:
+        - test
+        - -f
+        - /tmp/ready
+      
+      # Tiempo de espera antes de iniciar los chequeos (segundos)
+      # Necesitamos esperar a que la aplicación se inicialice
+      initialDelaySeconds: 3
+      
+      # Intervalo entre chequeos consecutivos (segundos)
+      periodSeconds: 5
+      
+      # Tiempo máximo para que el comando se complete (segundos)
+      timeoutSeconds: 2
+      
+      # Número de fallos consecutivos para marcar como "No Listo"
+      failureThreshold: 2
+      
+      # Número de éxitos consecutivos para marcar como "Listo"
+      successThreshold: 1

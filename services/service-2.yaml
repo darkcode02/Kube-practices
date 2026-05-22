@@ -1,3 +1,5 @@
+# Ejemplo: backend Node.js expuesto con un Service NodePort.
+# Practica la relación Deployment -> Pods -> Service usando labels.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -7,6 +9,7 @@ metadata:
 spec:
   replicas: 3
   selector:
+    # Selector del Deployment: debe coincidir con template.metadata.labels.
     matchLabels:
       app: back
   template:
@@ -19,6 +22,7 @@ spec:
         image: node:20
         ports:
         - containerPort: 80
+        # Levanta un servidor HTTP simple dentro del contenedor para el laboratorio.
         command: ["npx", "http-server", "-p", "80"]
 ---
 apiVersion: v1
@@ -30,6 +34,7 @@ metadata:
 spec:
   type: NodePort
   selector:
+    # El Service enviará tráfico solo a Pods con app=back.
     app: back
   ports:
   - protocol: TCP

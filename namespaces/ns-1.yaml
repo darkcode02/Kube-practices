@@ -1,3 +1,5 @@
+# Ejemplo: separación lógica de ambientes usando namespaces.
+# Crea development y production para observar cómo los mismos nombres pueden aislarse.
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -12,6 +14,7 @@ metadata:
   labels:
     name: production
 ---
+# Carga de ejemplo en development.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -35,6 +38,7 @@ spec:
           ports:
             - containerPort: 80
 ---
+# Carga de ejemplo en production.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -55,6 +59,7 @@ spec:
       containers:
         - name: backend
           image: ubuntu:latest
+          # Mantiene el contenedor vivo para poder inspeccionarlo con kubectl exec/logs.
           command: ["sleep", "3600"]
           ports:
             - containerPort: 80

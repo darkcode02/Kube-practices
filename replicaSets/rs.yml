@@ -1,3 +1,5 @@
+# Ejemplo: ReplicaSet básico.
+# Mantiene siempre tres Pods con la label app=pod-label.
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
@@ -7,6 +9,7 @@ metadata:
 spec:
   replicas: 3
   selector:
+    # El selector debe coincidir con las labels del template.
     matchLabels:
       app: pod-label
   template:

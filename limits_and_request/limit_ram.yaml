@@ -1,3 +1,5 @@
+# Ejemplo: límite de memoria menor que el consumo solicitado por stress.
+# Permite observar un fallo tipo OOMKilled cuando el proceso supera el limit.
 apiVersion: v1
 kind: Pod
 metadata:
@@ -8,8 +10,11 @@ spec:
       image: polinux/stress
       resources:
         limits:
+          # Máximo permitido para el contenedor.
           memory: "200Mi"
         requests:
+          # Memoria usada por el scheduler para ubicar el Pod.
           memory: "100Mi"
       command: ["stress"]
+      # stress intenta usar 250M, por encima del limit de 200Mi.
       args: ["--vm", "1", "--vm-bytes", "250M", "--vm-hang", "1"]

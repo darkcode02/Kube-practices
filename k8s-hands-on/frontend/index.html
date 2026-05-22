@@ -1,10 +1,12 @@
 <!DOCTYPE html>
+<!-- Frontend del laboratorio k8s-hands-on: dashboard para consumir la API backend desde Kubernetes. -->
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>K8s Hands-On Dashboard</title>
     <style>
+        /* Estilos embebidos para mantener el ejemplo autocontenido dentro de la imagen nginx. */
         :root {
             color-scheme: light;
             --bg: #f6f8fb;
@@ -337,6 +339,7 @@
 </head>
 <body>
     <main class="app">
+        <!-- Encabezado con estado de conexión para identificar si el Service backend responde. -->
         <header class="topbar">
             <div class="brand">
                 <div class="brand-mark">K8s</div>
@@ -351,6 +354,7 @@
             </div>
         </header>
 
+        <!-- Tarjetas alimentadas por /api/info y /api/metrics. -->
         <section class="cards" aria-label="Metricas">
             <article class="metric"><span>Requests</span><strong id="requests">0</strong></article>
             <article class="metric"><span>Tareas</span><strong id="tasksTotal">0</strong></article>
@@ -358,6 +362,7 @@
             <article class="metric"><span>Uptime</span><strong id="uptime">0s</strong></article>
         </section>
 
+        <!-- Zona principal: formulario CRUD y lista de tareas servidas por el backend Go. -->
         <section class="grid">
             <div class="panel">
                 <div class="panel-header">
@@ -365,6 +370,7 @@
                     <button class="btn ghost" id="refreshBtn">Actualizar</button>
                 </div>
                 <div class="panel-body">
+                    <!-- El formulario envía POST /api/tasks; la lista usa PATCH y DELETE por tarea. -->
                     <form id="taskForm" class="form">
                         <input id="titleInput" name="title" autocomplete="off" placeholder="Nueva tarea" required>
                         <input id="ownerInput" name="owner" autocomplete="off" placeholder="Responsable">
@@ -407,6 +413,7 @@
     </main>
 
     <script>
+        // Cliente ligero para hablar con el backend a través del proxy nginx (/api).
         const api = {
             info: '/api/info',
             metrics: '/api/metrics',
@@ -458,6 +465,7 @@
         });
 
         async function loadDashboard() {
+            // Carga estado general, métricas y tareas; útil para ver réplicas y healthchecks.
             try {
                 const [info, metrics, tasks] = await Promise.all([
                     request(api.info),
@@ -479,6 +487,7 @@
         }
 
         async function request(url, options = {}) {
+            // Centraliza fetch, JSON y errores para todos los endpoints del dashboard.
             const response = await fetch(url, options);
             const text = await response.text();
             const data = text ? JSON.parse(text) : {};
@@ -503,6 +512,7 @@
         }
 
         function renderTasks(tasks) {
+            // Pinta la lista y conecta cada botón con los endpoints PATCH/DELETE.
             els.taskList.innerHTML = '';
             if (!tasks.length) {
                 els.taskList.innerHTML = '<div class="notice">No hay tareas registradas.</div>';

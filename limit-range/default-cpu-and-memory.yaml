@@ -1,3 +1,5 @@
+# Ejemplo: LimitRange que asigna requests y limits por defecto.
+# Si un Pod no declara recursos, Kubernetes completa los valores desde esta política.
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -13,9 +15,11 @@ metadata:
 spec:
   limits:
     - default:
+        # Limits aplicados automáticamente a contenedores que no los declaren.
         cpu: 1
         memory: 512Mi
       defaultRequest:
+        # Requests aplicados automáticamente para scheduling.
         cpu: 0.5
         memory: 256Mi
       type: Container
@@ -30,4 +34,5 @@ spec:
   containers:
     - name: cont1
       image: nginx:alpine
+      # No se declaran resources para observar cómo el LimitRange agrega defaults.
       

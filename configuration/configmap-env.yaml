@@ -1,8 +1,11 @@
+# Ejemplo: ConfigMap inyectado como variables de entorno.
+# Sirve para separar configuración no sensible de la imagen del contenedor.
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: app-env-config
 data:
+  # Estas keys aparecerán como variables APP_* dentro del contenedor.
   APP_MODE: "training"
   APP_COLOR: "blue"
   APP_MESSAGE: "configuracion desde ConfigMap"
@@ -28,5 +31,6 @@ spec:
           image: busybox:1.36
           command: ["sh", "-c", "while true; do env | grep APP_; sleep 20; done"]
           envFrom:
+            # Carga todas las keys del ConfigMap como variables de entorno.
             - configMapRef:
                 name: app-env-config

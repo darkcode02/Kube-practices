@@ -1,3 +1,5 @@
+# Ejemplo: recursos aislados dentro del namespace ci.
+# Sirve para practicar cómo namespace, Deployment y Service trabajan juntos.
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -5,6 +7,7 @@ metadata:
   labels:
     name: ci
 ---
+# Deployment creado explícitamente dentro del namespace ci.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,6 +18,7 @@ metadata:
 spec:
   replicas: 3
   selector:
+    # Relaciona el Deployment con sus Pods.
     matchLabels:
       app: backend
   template:
@@ -35,6 +39,7 @@ spec:
             - name: http
               containerPort: 8080
 ---
+# Service dentro del mismo namespace; solo descubre Pods de ci con app=backend.
 apiVersion: v1
 kind: Service
 metadata:
@@ -43,6 +48,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
+    # La label debe coincidir con las labels del template del Deployment.
     app: backend
   ports:
     - name: http

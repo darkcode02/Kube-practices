@@ -1,3 +1,5 @@
+# Ejemplo: solicitud de CPU exagerada para observar un Pod en Pending.
+# Kubernetes no programa el Pod si ningún nodo puede satisfacer los requests.
 apiVersion: v1
 kind: Pod
 metadata:
@@ -10,6 +12,5 @@ spec:
         limits:
           cpu: "100"
         requests:
-          cpu: "100" # n este caso el pod quedara en pending porque no hay recursos disponibles para satisfacer la solicitud
+          cpu: "100" # En este caso el Pod quedará en Pending por falta de CPU disponible.
       args: ["-cpus", "2"]
-

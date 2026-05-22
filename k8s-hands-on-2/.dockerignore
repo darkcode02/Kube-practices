@@ -1,6 +1,8 @@
+# Evita enviar dependencias locales y archivos de trabajo al contexto de Docker.
 node_modules
 npm-debug.log
 .git
 .agents
 .codex
+# Los manifiestos se aplican por kubectl; no hacen falta dentro de la imagen.
 k8s

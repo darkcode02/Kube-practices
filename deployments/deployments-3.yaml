@@ -1,3 +1,5 @@
+# Ejemplo: Deployment con annotation de change-cause para estudiar rollouts.
+# La annotation queda visible en el historial cuando se revisan cambios del Deployment.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -9,6 +11,7 @@ metadata:
 spec:
   replicas: 3
   selector: 
+    # Debe coincidir con template.metadata.labels.
     matchLabels:
       app: front
   template:
@@ -20,4 +23,5 @@ spec:
         - name: nginx
           image: nginx:alpine
           ports:
+          # Puerto expuesto dentro del contenedor para el ejemplo.
           - containerPort: 100

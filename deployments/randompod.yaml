@@ -1,3 +1,5 @@
+# Ejemplo: Pod Ubuntu mínimo para prácticas de inspección.
+# Se mantiene ejecutándose para poder entrar con kubectl exec.
 apiVersion: v1
 kind: Pod
 metadata:
@@ -7,5 +9,6 @@ spec:
     - name: ubuntu-container
       image: ubuntu
       args:
+      # sleep infinity evita que el contenedor termine inmediatamente.
       - sleep
       - infinity

@@ -1,3 +1,5 @@
+# Ejemplo: diferencia entre request y limit de CPU.
+# El scheduler reserva 500m, pero el contenedor puede usar hasta 1000m si hay capacidad.
 apiVersion: v1
 kind: Pod
 metadata:
@@ -8,7 +10,9 @@ spec:
       image: vish/stress
       resources:
         limits:
+          # 1000m equivale a 1 CPU.
           cpu: "1000m"
         requests:
+          # 500m equivale a media CPU reservada para scheduling.
           cpu: "500m"
       args: ["-cpus", "2"]

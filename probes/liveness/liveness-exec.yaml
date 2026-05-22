@@ -1,0 +1,25 @@
+# Ejemplo: livenessProbe con comando exec.
+# El archivo /tmp/healthy existe al inicio y luego se borra para provocar reinicio.
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: liveness
+  name: liveness-exec
+spec:
+  containers:
+  - name: liveness
+    image: registry.k8s.io/busybox:1.27.2
+    args:
+    - /bin/sh
+    - -c
+    # Tras 30 segundos se elimina el archivo, haciendo fallar el comando cat.
+    - touch /tmp/healthy; sleep 30; rm -f /tmp/healthy; sleep 600
+    livenessProbe:
+      exec:
+        command:
+        # Si cat no encuentra el archivo, devuelve error y la probe falla.
+        - cat
+        - /tmp/healthy
+      initialDelaySeconds: 5
+      periodSeconds: 5

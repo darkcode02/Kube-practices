@@ -1,0 +1,189 @@
+# ========================================
+# EJEMPLO COMPLETO - TODAS LAS PROBES
+# ========================================
+# Este ejemplo muestra cómo usar las tres probes juntas en una aplicación realista.
+# 
+# Escenario: Un servidor web que:
+# - Tarda 20 segundos en inicializar (startup probe)
+# - Necesita 5 segundos para calentar después (readiness probe)
+# - Debe reiniciarse si deja de responder (liveness probe)
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: complete-probes-example
+  labels:
+    app: web-service
+    environment: production
+  annotations:
+    description: "Ejemplo completo con todas las probes configuradas"
+spec:
+  # Tiempo que Kubernetes espera antes de forzar la terminación del Pod
+  terminationGracePeriodSeconds: 30
+  
+  containers:
+  - name: web-server
+    image: registry.k8s.io/e2e-test-images/agnhost:2.40
+    args:
+    - liveness
+    
+    ports:
+    - name: http
+      containerPort: 8080
+      protocol: TCP
+    
+    # ========================================
+    # STARTUP PROBE
+    # ========================================
+    # Verifica que la aplicación ha completado su inicialización
+    # Se ejecuta primero y solo una vez al inicio
+    # Si falla después de failureThreshold, el Pod falla permanentemente
+    startupProbe:
+      httpGet:
+        path: /startup
+        port: 8080
+        scheme: HTTP
+      
+      # Esperar 0 segundos antes de empezar a verificar
+      initialDelaySeconds: 0
+      
+      # Verificar cada 5 segundos durante el startup
+      periodSeconds: 5
+      
+      # Esperar máximo 3 segundos por respuesta
+      timeoutSeconds: 3
+      
+      # Permitir 25 intentos fallidos = 125 segundos máximo para startup
+      failureThreshold: 25
+      
+      # Un éxito es suficiente para marcar como iniciado
+      successThreshold: 1
+    
+    # ========================================
+    # READINESS PROBE
+    # ========================================
+    # Verifica si el contenedor está listo para recibir tráfico
+    # Si falla, el Pod se quita de los endpoints del servicio
+    # pero el contenedor sigue ejecutándose (no se reinicia)
+    readinessProbe:
+      httpGet:
+        path: /readyz
+        port: 8080
+        scheme: HTTP
+        # Headers personalizados para el healthcheck
+        httpHeaders:
+        - name: X-Custom-Header
+          value: readiness-check
+      
+      # Iniciar verificaciones 5 segundos después de que startup pase
+      initialDelaySeconds: 5
+      
+      # Verificar cada 5 segundos si está listo
+      periodSeconds: 5
+      
+      # Esperar máximo 2 segundos por respuesta
+      timeoutSeconds: 2
+      
+      # 3 fallos consecutivos significa "No Listo" (quitar del servicio)
+      failureThreshold: 3
+      
+      # 1 éxito consecutivo significa "Listo" (añadir al servicio)
+      successThreshold: 1
+    
+    # ========================================
+    # LIVENESS PROBE
+    # ========================================
+    # Verifica si el contenedor está vivo y funcional
+    # Si falla, Kubernetes reinicia el contenedor
+    # Uso: detectar deadlocks, memory leaks, etc
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+        scheme: HTTP
+        httpHeaders:
+        - name: X-Custom-Header
+          value: liveness-check
+      
+      # Esperar 10 segundos antes de verificar liveness
+      # (Startup + Readiness ya tienen tiempo para completarse)
+      initialDelaySeconds: 10
+      
+      # Verificar cada 10 segundos si está vivo
+      periodSeconds: 10
+      
+      # Esperar máximo 3 segundos por respuesta
+      timeoutSeconds: 3
+      
+      # 3 fallos consecutivos = reiniciar el contenedor
+      failureThreshold: 3
+      
+      # 1 éxito es suficiente para considerarlo vivo
+      successThreshold: 1
+    
+    # ========================================
+    # RECURSOS
+    # ========================================
+    # Definir requests y limits para el Pod
+    resources:
+      requests:
+        # Mínimo garantizado
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        # Máximo permitido
+        memory: "128Mi"
+        cpu: "500m"
+    
+    # ========================================
+    # VARIABLES DE ENTORNO
+    # ========================================
+    env:
+    - name: APP_ENV
+      value: "production"
+    - name: LOG_LEVEL
+      value: "info"
+    
+    # ========================================
+    # LIFECYCLE HOOKS
+    # ========================================
+    lifecycle:
+      # Ejecutarse cuando el contenedor inicia
+      postStart:
+        exec:
+          command: ["/bin/sh", "-c", "echo 'Container started' > /tmp/startup.log"]
+      
+      # Ejecutarse cuando el contenedor se va a terminar
+      preStop:
+        exec:
+          command: ["/bin/sh", "-c", "echo 'Container stopping' && sleep 5"]
+  
+  # Política de reinicio
+  restartPolicy: Always
+  # Always: reinicia siempre (excepto cuando se delete explícitamente)
+  # OnFailure: reinicia solo si exit code != 0
+  # Never: nunca reinicia
+
+---
+# ========================================
+# SERVICIO ASOCIADO
+# ========================================
+# Solo envía tráfico a Pods que pasen la readiness probe
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+  labels:
+    app: web-service
+spec:
+  type: ClusterIP
+  selector:
+    app: web-service
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    protocol: TCP
+  
+  # Esperar a que la readiness probe pase antes de añadir a endpoints
+  publishNotReadyAddresses: false

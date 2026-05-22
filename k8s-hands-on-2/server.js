@@ -1,3 +1,4 @@
+// API de Vanta Wear: Express sirve el frontend, valida datos y persiste catálogo/carrito en PostgreSQL.
 const crypto = require("crypto");
 const path = require("path");
 const express = require("express");
@@ -6,6 +7,7 @@ const { Pool } = require("pg");
 const app = express();
 const port = Number(process.env.PORT || 3000);
 
+// Pool de conexiones configurado por variables de entorno inyectadas desde Kubernetes.
 const pool = new Pool({
   host: process.env.DB_HOST || "localhost",
   port: Number(process.env.DB_PORT || 5432),
@@ -15,6 +17,7 @@ const pool = new Pool({
 });
 
 const seedProducts = [
+  // Datos iniciales para que la tienda tenga catálogo después del primer arranque.
   {
     id: "jacket-neo",
     name: "Chaqueta Neo Shell",
@@ -68,6 +71,7 @@ const seedProducts = [
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
+// Healthcheck usado por readiness/liveness; valida también la conexión con PostgreSQL.
 app.get("/healthz", asyncRoute(async (_request, response) => {
   try {
     await pool.query("SELECT 1");
@@ -82,6 +86,7 @@ app.get("/api/products", asyncRoute(async (_request, response) => {
   response.json(result.rows.map(mapProduct));
 }));
 
+// Crea prendas desde el formulario de vendedor y las guarda en la base de datos.
 app.post("/api/products", asyncRoute(async (request, response) => {
   const product = validateProduct(request.body);
   const id = `custom-${crypto.randomUUID()}`;
@@ -93,6 +98,7 @@ app.post("/api/products", asyncRoute(async (request, response) => {
   response.status(201).json(mapProduct(result.rows[0]));
 }));
 
+// Login simplificado para el laboratorio: crea o actualiza un usuario por email.
 app.post("/api/login", asyncRoute(async (request, response) => {
   const email = String(request.body.email || "").trim().toLowerCase();
   const password = String(request.body.password || "");
@@ -114,6 +120,7 @@ app.post("/api/login", asyncRoute(async (request, response) => {
   response.json(result.rows[0]);
 }));
 
+// El carrito se separa por sessionId para simular sesiones sin autenticación completa.
 app.get("/api/cart", asyncRoute(async (request, response) => {
   const sessionId = requireSessionId(request.query.sessionId);
   const result = await pool.query(
@@ -173,6 +180,7 @@ app.use((error, _request, response, _next) => {
   response.status(error.status || 500).json({ error: error.message || "Error interno del servidor." });
 });
 
+// Inicializa tablas y datos semilla. retry permite esperar a que Postgres termine de arrancar.
 async function initDb() {
   await retry(async () => {
     await pool.query("SELECT 1");
@@ -218,6 +226,7 @@ async function initDb() {
 }
 
 function validateProduct(body) {
+  // Normaliza entrada del cliente antes de validar reglas de negocio.
   const product = {
     name: String(body.name || "").trim(),
     category: String(body.category || "").trim(),
@@ -243,6 +252,7 @@ function validateProduct(body) {
 }
 
 function requireSessionId(value) {
+  // Todas las operaciones del carrito necesitan una sesión del navegador.
   const sessionId = String(value || "").trim();
   if (!sessionId) {
     throw httpError(400, "Falta el identificador de sesión del carrito.");
@@ -257,6 +267,7 @@ function httpError(status, message) {
 }
 
 function mapProduct(row) {
+  // Convierte filas de PostgreSQL al contrato JSON que consume el frontend.
   return {
     id: row.id,
     name: row.name,
@@ -276,12 +287,14 @@ function mapCartItem(row) {
 }
 
 function asyncRoute(handler) {
+  // Wrapper para que errores async lleguen al middleware de errores de Express.
   return (request, response, next) => {
     Promise.resolve(handler(request, response, next)).catch(next);
   };
 }
 
 async function retry(operation, attempts) {
+  // Reintentos simples para dependencias que pueden iniciar después de la app.
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
       return await operation();
@@ -304,6 +317,7 @@ initDb()
   });
 
 process.on("SIGTERM", async () => {
+  // Cierre ordenado cuando Kubernetes termina el Pod.
   await pool.end();
   process.exit(0);
 });

@@ -1,0 +1,86 @@
+# ========================================
+# STARTUP PROBE - EXEC (Command Execution)
+# ========================================
+# Ejecuta un comando para verificar si la inicialización está completa.
+# Útil cuando la aplicación necesita realizar tareas complejas de startup.
+#
+# Caso de uso: Aplicaciones que necesitan compilar código, cargar bases de datos,
+# o realizar otras tareas intensivas antes de estar disponibles.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: startup-exec-example
+  labels:
+    app: build-on-startup
+spec:
+  containers:
+  - name: builder-app
+    image: registry.k8s.io/busybox:1.27.2
+    command:
+    - /bin/sh
+    - -c
+    - |
+      echo "Iniciando aplicación... compilando código..."
+      
+      # Simular compilación que tarda tiempo
+      for i in 1 2 3 4 5; do
+        echo "Compilando paso $i..."
+        sleep 5
+      done
+      
+      # Crear archivo indicando que startup está completo
+      echo "Compilación terminada" > /tmp/startup_complete.txt
+      
+      # Simular ejecución de la aplicación
+      echo "Aplicación ejecutándose..."
+      sleep 3600
+    
+    # Definición de la startup probe con EXEC
+    startupProbe:
+      # Tipo de probe: ejecutar comando
+      exec:
+        # Verifica si el archivo de startup existe
+        command:
+        - test
+        - -f
+        - /tmp/startup_complete.txt
+      
+      # Tiempo de espera antes de iniciar los chequeos
+      # Empezar a revisar inmediatamente
+      initialDelaySeconds: 0
+      
+      # Intervalo entre chequeos (segundos)
+      # Revisar frecuentemente durante el startup
+      periodSeconds: 5
+      
+      # Tiempo máximo para ejecutar el comando (segundos)
+      timeoutSeconds: 2
+      
+      # Número de fallos permitidos durante startup
+      # 40 intentos * 5 segundos = 200 segundos máximo
+      failureThreshold: 40
+      
+      # Una vez que pase
+      successThreshold: 1
+    
+    # Después de que startup pase, se activan liveness y readiness
+    livenessProbe:
+      exec:
+        command:
+        - test
+        - -f
+        - /tmp/startup_complete.txt
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      failureThreshold: 3
+    
+    readinessProbe:
+      exec:
+        command:
+        - test
+        - -f
+        - /tmp/startup_complete.txt
+      initialDelaySeconds: 0
+      periodSeconds: 5
+      failureThreshold: 2

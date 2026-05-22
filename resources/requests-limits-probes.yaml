@@ -1,3 +1,5 @@
+# Ejemplo: Deployment con requests, limits y probes en el mismo manifiesto.
+# Reúne tres temas clave de operación: capacidad solicitada, topes y salud del contenedor.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,19 +22,23 @@ spec:
           ports:
             - containerPort: 80
           resources:
+            # Requests: recursos que Kubernetes reserva para decidir dónde programar el Pod.
             requests:
               cpu: 50m
               memory: 64Mi
+            # Limits: máximo que el contenedor puede consumir antes de ser limitado o terminado.
             limits:
               cpu: 200m
               memory: 128Mi
           readinessProbe:
+            # Controla si el Pod está listo para recibir tráfico del Service.
             httpGet:
               path: /
               port: 80
             initialDelaySeconds: 3
             periodSeconds: 5
           livenessProbe:
+            # Controla si Kubernetes debe reiniciar el contenedor por falta de respuesta.
             httpGet:
               path: /
               port: 80

@@ -1,3 +1,5 @@
+# Ejemplos de clases QoS en Kubernetes.
+# Comparan Guaranteed, Burstable y BestEffort según cómo se declaran requests y limits.
 ---
 # QoS CLASS: GUARANTEED
 # Se asigna cuando requests == limits para CPU y memoria

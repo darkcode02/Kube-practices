@@ -1,3 +1,5 @@
+# Ejemplo: Deployment + Service para practicar DNS interno de Kubernetes.
+# El Service crea el nombre echo-service, resoluble desde otros Pods del cluster.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -7,6 +9,7 @@ metadata:
 spec:
   replicas: 2
   selector:
+    # El selector conecta el Deployment con los Pods que crea.
     matchLabels:
       app: echo
   template:
@@ -22,11 +25,13 @@ spec:
           ports:
             - containerPort: 5678
 ---
+# Service ClusterIP: balancea tráfico hacia las réplicas y expone un DNS estable.
 apiVersion: v1
 kind: Service
 metadata:
   name: echo-service
 spec:
+  # Debe coincidir con template.metadata.labels del Deployment.
   selector:
     app: echo
   ports:

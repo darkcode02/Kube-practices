@@ -1,3 +1,5 @@
+// Backend de laboratorio para Kubernetes: API HTTP sin base de datos externa.
+// Expone endpoints de salud, métricas simples y CRUD básico en memoria para practicar Services y probes.
 package main
 
 import (
@@ -14,6 +16,7 @@ import (
 )
 
 type task struct {
+	// task es el recurso principal que devuelve la API en /api/tasks.
 	ID        int       `json:"id"`
 	Title     string    `json:"title"`
 	Owner     string    `json:"owner"`
@@ -30,6 +33,7 @@ type taskInput struct {
 }
 
 type server struct {
+	// server concentra estado en memoria y metadatos útiles para observar réplicas en Kubernetes.
 	startedAt time.Time
 	hostname  string
 	version   string
@@ -42,6 +46,7 @@ type server struct {
 }
 
 func main() {
+	// El hostname permite identificar qué Pod respondió cuando hay varias réplicas.
 	hostname, err := os.Hostname()
 	if err != nil {
 		hostname = "unknown"
@@ -61,6 +66,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+	// Rutas públicas para probar conectividad, healthchecks y operaciones de la API.
 	mux.HandleFunc("/", s.handleRoot)
 	mux.HandleFunc("/api", s.handleRoot)
 	mux.HandleFunc("/api/", s.routeAPI)
@@ -73,6 +79,7 @@ func main() {
 }
 
 func (s *server) withMiddleware(next http.Handler) http.Handler {
+	// Middleware mínimo: cuenta requests, habilita CORS y escribe logs por petición.
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		s.mu.Lock()
@@ -93,6 +100,7 @@ func (s *server) withMiddleware(next http.Handler) http.Handler {
 }
 
 func (s *server) routeAPI(w http.ResponseWriter, r *http.Request) {
+	// Router manual suficiente para el ejemplo, sin dependencias externas.
 	path := strings.TrimPrefix(r.URL.Path, "/api")
 	switch {
 	case path == "/healthz" || path == "/readyz":
@@ -124,6 +132,7 @@ func (s *server) handleRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleHealth(w http.ResponseWriter, r *http.Request) {
+	// Endpoint usado por readinessProbe y livenessProbe en los manifiestos.
 	writeJSON(w, http.StatusOK, map[string]any{
 		"status":    "ok",
 		"hostname":  s.hostname,
@@ -150,6 +159,7 @@ func (s *server) handleInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleMetrics(w http.ResponseWriter, r *http.Request) {
+	// Métricas didácticas para observar estado del proceso sin Prometheus.
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -171,6 +181,7 @@ func (s *server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleTasks(w http.ResponseWriter, r *http.Request) {
+	// GET lista tareas; POST crea una nueva tarea en memoria.
 	switch r.Method {
 	case http.MethodGet:
 		s.mu.RLock()
@@ -221,6 +232,7 @@ func (s *server) handleTaskByID(w http.ResponseWriter, r *http.Request, rawID st
 }
 
 func (s *server) createTask(input taskInput) (task, error) {
+	// Valida entrada y usa mutex porque varias requests pueden modificar el slice.
 	title := strings.TrimSpace(input.Title)
 	if title == "" {
 		return task{}, errors.New("title is required")
@@ -285,6 +297,7 @@ func (s *server) deleteTask(id int) error {
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload any) {
+	// Helper central para responder JSON con status explícito.
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(payload); err != nil {

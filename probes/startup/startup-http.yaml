@@ -1,0 +1,71 @@
+# ========================================
+# STARTUP PROBE - HTTP GET
+# ========================================
+# La startup probe verifica si la aplicación ha terminado de inicializarse.
+# Durante el inicio, tanto las liveness como readiness probes no se ejecutan.
+# Una vez que startup pase, las otras probes comienzan.
+#
+# Caso de uso: Aplicaciones que tardan mucho tiempo en iniciar
+# (compilación JIT, carga de datos, etc).
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: startup-http-example
+  labels:
+    app: slow-startup-app
+spec:
+  containers:
+  - name: slow-app
+    image: registry.k8s.io/e2e-test-images/agnhost:2.40
+    args:
+    - liveness
+    ports:
+    - name: http
+      containerPort: 8080
+      protocol: TCP
+    
+    # Definición de la startup probe con HTTP GET
+    startupProbe:
+      # Tipo de probe: HTTP GET
+      httpGet:
+        # Ruta del endpoint de inicio
+        path: /startup
+        # Puerto en el que escucha la aplicación
+        port: 8080
+        scheme: HTTP
+      
+      # Tiempo de espera antes de iniciar los chequeos (segundos)
+      # Para aplicaciones lentas, este puede ser menor
+      initialDelaySeconds: 0
+      
+      # Intervalo entre chequeos consecutivos (segundos)
+      # Chequeamos cada 10 segundos durante el inicio
+      periodSeconds: 10
+      
+      # Tiempo máximo para esperar una respuesta (segundos)
+      timeoutSeconds: 3
+      
+      # Número de fallos consecutivos antes de considerar el Pod como fallido
+      # Como es startup, permitimos más intentos para aplicaciones lentas
+      failureThreshold: 30  # 30 intentos * 10 segundos = 300 segundos = 5 minutos máximo
+      
+      # Número de éxitos consecutivos para considerar iniciado (usualmente 1)
+      successThreshold: 1
+    
+    # Una vez que startup pasa, se ejecutan liveness y readiness
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      failureThreshold: 3
+    
+    readinessProbe:
+      httpGet:
+        path: /readyz
+        port: 8080
+      initialDelaySeconds: 0
+      periodSeconds: 5
+      failureThreshold: 3

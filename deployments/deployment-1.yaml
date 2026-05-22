@@ -1,3 +1,5 @@
+# Ejemplo: primer Deployment de nginx.
+# Un Deployment mantiene la cantidad deseada de réplicas y facilita actualizaciones.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -7,6 +9,7 @@ metadata:
 spec:
   replicas: 3
   selector: 
+    # Debe coincidir con template.metadata.labels para que el Deployment adopte sus Pods.
     matchLabels:
       app: nginx
   template:

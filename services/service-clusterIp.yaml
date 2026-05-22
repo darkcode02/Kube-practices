@@ -1,3 +1,5 @@
+# Ejemplo: Service ClusterIP para acceso interno dentro del cluster.
+# El Deployment crea tres Pods nginx y el Service reparte tráfico entre ellos.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -7,6 +9,7 @@ metadata:
 spec:
   replicas: 3
   selector:
+    # Debe coincidir con las labels del template.
     matchLabels:
       app: service-2
   template:
@@ -28,6 +31,7 @@ metadata:
   labels:
     app: service-2
 spec:
+  # ClusterIP no expone el servicio fuera del cluster.
   type: ClusterIP
   selector:
     app: service-2

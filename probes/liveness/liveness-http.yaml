@@ -1,0 +1,25 @@
+# Ejemplo: livenessProbe por HTTP.
+# Si /healthz falla repetidamente, Kubernetes reinicia el contenedor.
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: liveness
+  name: liveness-http
+spec:
+  containers:
+  - name: liveness
+    image: registry.k8s.io/e2e-test-images/agnhost:2.40
+    args:
+    - liveness
+    livenessProbe:
+      httpGet:
+        # Endpoint que Kubernetes consulta para saber si el proceso sigue sano.
+        path: /healthz
+        port: 8080
+        httpHeaders:
+        - name: Custom-Header
+          value: Awesome
+      initialDelaySeconds: 3
+      # Frecuencia con la que se ejecuta la comprobación.
+      periodSeconds: 3

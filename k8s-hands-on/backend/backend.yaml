@@ -1,3 +1,5 @@
+# Backend del laboratorio k8s-hands-on.
+# Expone una API HTTP interna con probes, recursos y seguridad básica del contenedor.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -8,6 +10,7 @@ spec:
   replicas: 3
   revisionHistoryLimit: 3
   selector:
+    # El Deployment solo administra Pods con app=backend.
     matchLabels:
       app: backend
   template:
@@ -20,6 +23,7 @@ spec:
           image: backend:latest
           imagePullPolicy: IfNotPresent
           env:
+            # Variables visibles desde la API para comprobar configuración del entorno.
             - name: APP_VERSION
               value: "2.0.0"
             - name: CLUSTER_NAME
@@ -28,12 +32,14 @@ spec:
             - name: http
               containerPort: 8080
           readinessProbe:
+            # /readyz decide si el Pod puede recibir tráfico.
             httpGet:
               path: /readyz
               port: http
             initialDelaySeconds: 3
             periodSeconds: 5
           livenessProbe:
+            # /healthz decide si el contenedor debe reiniciarse.
             httpGet:
               path: /healthz
               port: http
@@ -47,11 +53,13 @@ spec:
               cpu: 250m
               memory: 128Mi
           securityContext:
+            # Reduce privilegios del proceso dentro del contenedor.
             allowPrivilegeEscalation: false
             capabilities:
               drop:
                 - ALL
 ---
+# ClusterIP: el backend queda disponible dentro del cluster para el frontend.
 apiVersion: v1
 kind: Service
 metadata:
@@ -59,6 +67,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
+    # Selecciona las réplicas del backend.
     app: backend
   ports:
     - name: http

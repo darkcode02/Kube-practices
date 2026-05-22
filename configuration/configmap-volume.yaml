@@ -1,8 +1,11 @@
+# Ejemplo: ConfigMap montado como archivo dentro del contenedor.
+# Útil cuando la aplicación espera leer configuración desde el filesystem.
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: app-file-config
 data:
+  # Cada key del ConfigMap se convierte en un archivo dentro del volumen.
   app.properties: |
     mode=training
     retries=3
@@ -29,10 +32,12 @@ spec:
           image: busybox:1.36
           command: ["sh", "-c", "while true; do cat /etc/app-config/app.properties; sleep 20; done"]
           volumeMounts:
+            # Monta el ConfigMap como directorio de solo lectura.
             - name: app-config
               mountPath: /etc/app-config
               readOnly: true
       volumes:
         - name: app-config
           configMap:
+            # Nombre del ConfigMap declarado al inicio del archivo.
             name: app-file-config
