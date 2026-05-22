@@ -1,0 +1,140 @@
+---
+# QoS CLASS: GUARANTEED
+# Se asigna cuando requests == limits para CPU y memoria
+# Tiene la MÁXIMA PRIORIDAD durante la evicción de pods
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-guaranteed
+  namespace: default
+spec:
+  containers:
+  - name: app
+    image: nginx:latest
+    resources:
+      requests:
+        cpu: 500m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+
+---
+# QoS CLASS: BURSTABLE
+# Se asigna cuando tiene requests pero limits > requests o no hay limits
+# Tiene PRIORIDAD MEDIA durante la evicción de pods
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-burstable
+  namespace: default
+spec:
+  containers:
+  - name: app
+    image: nginx:latest
+    resources:
+      requests:
+        cpu: 250m
+        memory: 128Mi
+      limits:
+        cpu: 1000m
+        memory: 512Mi
+
+---
+# QoS CLASS: BESTEFFORT
+# Se asigna cuando NO hay requests ni limits definidos
+# Tiene la MÍNIMA PRIORIDAD - es el primero en ser eviccionado
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-besteffort
+  namespace: default
+spec:
+  containers:
+  - name: app
+    image: nginx:latest
+    # Sin requests ni limits
+
+---
+# EJEMPLO ADICIONAL: Deployment con Guaranteed QoS
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-guaranteed
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-guaranteed
+  template:
+    metadata:
+      labels:
+        app: nginx-guaranteed
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
+
+---
+# EJEMPLO ADICIONAL: Deployment con Burstable QoS
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-burstable
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-burstable
+  template:
+    metadata:
+      labels:
+        app: nginx-burstable
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 50m
+            memory: 32Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+
+---
+# EJEMPLO ADICIONAL: Deployment con BestEffort QoS
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-besteffort
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-besteffort
+  template:
+    metadata:
+      labels:
+        app: nginx-besteffort
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        # Sin requests ni limits
